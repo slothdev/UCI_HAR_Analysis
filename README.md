@@ -17,7 +17,7 @@ There is only one script **run_analysis.R** used, which calls one main function 
 
 1. `run_analysis()` firsts retrieves the data from the [Original Dataset](https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip) if it is not already in the script working directory, and unzips it when it is.
 
-2. The required files are then read in from the dataset by `run_analysis()`. Since means are to be calculated for all Mean and Standard Deviation mesaurements for every subject and actvity, eight raw files are required for this analysis as follows:  
+2. The required files are then read in from the dataset by `run_analysis()`. Since means are to be calculated for all Mean and Standard Deviation measurements for every subject and actvity, eight raw files are required for this analysis as follows:  
 
     Filename            | Description
     --------------------|-----------
@@ -41,7 +41,7 @@ There is only one script **run_analysis.R** used, which calls one main function 
                               colClasses="character", stringsAsFactors=FALSE, 
                               col.names=c("FID", "FEATURE"))
     ```
-    + After reading in the test and training sets, we then `cbind()` Subject and Activity onto their respective sets. We can do this for both sets as the number of measurements and subject/activity  are identical.
+    + After reading in the test and training sets, we then `cbind()` *Subject* and *Activity* onto their respective sets. We can do this for both sets as the number of measurements and subject/activity  are identical.
     ```
     # Example for the test set, same for the training set
     # where rawfile_test = "X_test.txt"", labels_stest = "subject_test.txt", labels_atest = "y_test.txt"
@@ -75,8 +75,7 @@ features$FEATURE <- gsub("BodyAcc", "BodyAcceleration", features$FEATURE)
 features$FEATURE <- gsub("mean", "Mean", features$FEATURE)
 ...
 ```
-
-5. We can finally merge the test and train sets into one using `rbind()` to join the subsetted features (which is a 10299 x 86 frame) instead of first joining the sets then selecting for the required feature variables which would involve using a 10299 x 561 frame. We also relabel the column names after joining to end up with a 10299 x 88 frame (including the 2 columns for Subject and Activity) with the proper order of columns Subject, Activity, Var1, Var2... VarX.
+5. We can finally merge the test and train sets into one using `rbind()` to join the subsetted features (which is a 10299 x 86 frame) instead of first joining the sets then selecting for the required feature variables which would involve using a 10299 x 561 frame. We also relabel the column names after joining to end up with a 10299 x 88 frame (including the 2 columns for *Subject* and *Activity*) with the proper order of columns *Subject, Activity, Var1, Var2... VarX*.
 ```
 # Merge training (70%) and test sets (30%) into one data set
 # Select/Subset using from the test/training sets using FID (index of feature)
@@ -94,7 +93,7 @@ colnames(merged) <- c("SUBJECT" , "ACTIVITY", features[,2])
 
 > Summarising the data to obtain the tidy data set
 
-6.  To get the averages for each of the required feature variable measurements per subject and activity, the merged data set is first grouped by Subject and Activity. Then `summarise_each()` from `dplyr` is used to conveniently obtain the mean of each grouping of Subject-Activity-Variable (but excluding the Subject and Activity columns 1 and 2). We apply a `mutate()` to replace activity labels with descriptive activity names from "activity_labels.txt". `dplyr` allows us to do this handily using pipelines:
+6.  To get the averages for each of the required feature variable measurements per subject and activity, the merged data set is first grouped by *Subject* and *Activity*. Then `summarise_each()` from `dplyr` is used to conveniently obtain the mean of each grouping of Subject-Activity-Variable (excluding *Subject* and *Activity* columns 1 and 2). We apply a `mutate()` to replace activity labels with descriptive activity names from "activity_labels.txt". `dplyr` allows us to do this handily using pipelines:
 ```
 final <- data.table(merged) %>% 
     group_by(SUBJECT, ACTIVITY) %>% 
