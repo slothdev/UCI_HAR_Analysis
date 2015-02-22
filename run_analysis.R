@@ -1,5 +1,6 @@
 # run_analysis.R
-# Edwin Seah 20150219121340
+# Edwin Seah 20150219121340 
+# https://github.com/slothdev/UCI_HAR_Analysis
 #
 # Script for the analysis of HCI accerlerometer data from Samsung smartphones
 # 1. Merges the training and the test sets to create one data set.
@@ -9,7 +10,7 @@
 # 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
 
 run_analysis <- function() {
-    # Load libraries to be used
+    # Loads libraries to be used
     library(data.table)
     library(dplyr)
     
