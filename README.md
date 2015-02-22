@@ -14,56 +14,50 @@ This readme documents the files and processes used in the analysis of the UCI Hu
 
 There is only one script **run_analysis.R** used, which calls one main function `run_analysis()` with no arguments. To run, save the script in any directory, source it and call `run_analysis()`.
 
-
 ***
 
-
-> Getting the required files
-
+> Getting the required files  
 
 1.  ```run_analysis()``` firsts retrieves the data from the [Original Dataset](https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip) if it is not already in the script working directory, and unzips it when it is.
 
-2.  The required files are then read in from the dataset by `run_analysis()`. Since means are to be calculated for all Mean and Standard Deviation mesaurements for every subject and actvity, eight raw files are required for this analysis as follows:
+2.  The required files are then read in from the dataset by `run_analysis()`. Since means are to be calculated for all Mean and Standard Deviation mesaurements for every subject and actvity, eight raw files are required for this analysis as follows:  
 
-Filename             | Description
--------------------- | -----------
-features.txt         | Listing of all 561 feature variables.
-activity_labels.txt  | Links integer class labels to their activity name. Total of 6 activities.
-X_train.txt          | Training set containing 7352 observations of 561 feature variables.
-y_train.txt          | Identifies activity performed for each of 7352 observations in training set.
-X_test.txt           | Test set containing 2947 observations of 561 feature variables.
-y_test.txt           | Identifies activity performed for each of 2947 observations in test set.
-subject_train.txt    | Identifies subject for each of 7352 observations in train set. 
-subject_test.txt     | Identifies subject for each of 2947 observations in test set.
-
+    Filename             | Description
+    -------------------- | -----------
+    features.txt         | Listing of all 561 feature variables.
+    activity_labels.txt  | Links integer class labels to their activity name. Total of 6 activities.
+    X_train.txt          | Training set containing 7352 observations of 561 feature variables.
+    y_train.txt          | Identifies activity performed for each of 7352 observations in training set.
+    X_test.txt           | Test set containing 2947 observations of 561 feature variables.
+    y_test.txt           | Identifies activity performed for each of 2947 observations in test set.
+    subject_train.txt    | Identifies subject for each of 7352 observations in train set. 
+    subject_test.txt     | Identifies subject for each of 2947 observations in test set.
 
 ***
 
-
 > Merging the test and training sets to create one data set. 
 
-
 3.  All files are read in using `read.table()` since none of the required files have headers and are simply space-delimited. For the feature variable file we need to store it with an index number so that we can use it to select for the needed feature variables later. This is done by assigning each row number to a column called "FID", like so:
-```
-# Reading in features.txt (labelled "rawlabel_feat") into labels_feat data frame
-labels_feat <- read.table(rawlabel_feat, header=FALSE, sep=" ", 
-                          colClasses="character", stringsAsFactors=FALSE, 
-                          col.names=c("FID", "FEATURE"))
-```
-    + After reading in the test and training sets, we then `cbind()` Subject and Activity onto their respective sets. We can do this for both sets as the number of measurements and subject/activity  are identical.
+    ```
+    # Reading in features.txt (labelled "rawlabel_feat") into labels_feat data frame
+    labels_feat <- read.table(rawlabel_feat, header=FALSE, sep=" ", 
+                              colClasses="character", stringsAsFactors=FALSE, 
+                              col.names=c("FID", "FEATURE"))
+    ```
++ After reading in the test and training sets, we then `cbind()` Subject and Activity onto their respective sets. We can do this for both sets as the number of measurements and subject/activity  are identical.
 ```
 # Example for the test set, same for the training set
 # where rawfile_test = "X_test.txt"", labels_stest = "subject_test.txt", labels_atest = "y_test.txt"
 dtest <- read.table(rawfile_test, colClasses="numeric", stringsAsFactors=FALSE) %>% 
     cbind (SUBJECT=labels_stest$SID, ACTIVITY=labels_atest$AID)
 ```
-    + We will assign the appropriate column names for both to maintain consistency before merging.
++ We will assign the appropriate column names for both to maintain consistency before merging.
 ```
 # Assigning feature variable col names to test set
 colnames(dtest) <- c(labels_feat[,2], "SUBJECT" , "ACTIVITY") # labels test set
 colnames(dtrain) <- c(labels_feat[,2], "SUBJECT", "ACTIVITY") # labels train set
 ```
-    + For memory efficiency we only want to merge the test and train sets on the required measurements, therefore we first filter out the ones that we need using ```filter()``` from ```dplyr```.
++ For memory efficiency we only want to merge the test and train sets on the required measurements, therefore we first filter out the ones that we need using ```filter()``` from ```dplyr```.
 ```
 # Determine all feature variables that are mu or sigma measurements
 features <- filter(labels_feat, like(FEATURE, "mean|Mean|std"))
