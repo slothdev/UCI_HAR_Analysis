@@ -44,45 +44,43 @@ There is only one script **run_analysis.R** used, which calls one main function 
                               colClasses="character", stringsAsFactors=FALSE, 
                               col.names=c("FID", "FEATURE"))
     ```
-+ After reading in the test and training sets, we then `cbind()` Subject and Activity onto their respective sets. We can do this for both sets as the number of measurements and subject/activity  are identical.
-```
-# Example for the test set, same for the training set
-# where rawfile_test = "X_test.txt"", labels_stest = "subject_test.txt", labels_atest = "y_test.txt"
-dtest <- read.table(rawfile_test, colClasses="numeric", stringsAsFactors=FALSE) %>% 
+    + After reading in the test and training sets, we then `cbind()` Subject and Activity onto their respective sets. We can do this for both sets as the number of measurements and subject/activity  are identical.
+    ```
+    # Example for the test set, same for the training set
+    # where rawfile_test = "X_test.txt"", labels_stest = "subject_test.txt", labels_atest = "y_test.txt"
+    dtest <- read.table(rawfile_test, colClasses="numeric", stringsAsFactors=FALSE) %>% 
     cbind (SUBJECT=labels_stest$SID, ACTIVITY=labels_atest$AID)
-```
-+ We will assign the appropriate column names for both to maintain consistency before merging.
-```
-# Assigning feature variable col names to test set
-colnames(dtest) <- c(labels_feat[,2], "SUBJECT" , "ACTIVITY") # labels test set
-colnames(dtrain) <- c(labels_feat[,2], "SUBJECT", "ACTIVITY") # labels train set
-```
-+ For memory efficiency we only want to merge the test and train sets on the required measurements, therefore we first filter out the ones that we need using ```filter()``` from ```dplyr```.
-```
-# Determine all feature variables that are mu or sigma measurements
-features <- filter(labels_feat, like(FEATURE, "mean|Mean|std"))
-```
+    ```
+    + We will assign the appropriate column names for both to maintain consistency before merging.
+    ```
+    # Assigning feature variable col names to test set
+    colnames(dtest) <- c(labels_feat[,2], "SUBJECT" , "ACTIVITY") # labels test set
+    colnames(dtrain) <- c(labels_feat[,2], "SUBJECT", "ACTIVITY") # labels train set
+    ```
+    + For memory efficiency we only want to merge the test and train sets on the required measurements, therefore we first filter out the ones that we need using ```filter()``` from ```dplyr```.
+    ```
+    # Determine all feature variables that are mu or sigma measurements
+    features <- filter(labels_feat, like(FEATURE, "mean|Mean|std"))
+    ```
 
+    4.  Since the feature variables are not clean and hard to read, we also need to scrub them for duplicates and illegal symbols such as parantheses or dashes using ```gsub()```. Some guidelines for this scrubbing were followed as per this [Coursera discussion forum thread](https://class.coursera.org/getdata-011/forum/thread?thread_id=215), including expanding the frequency and time domain descriptors and removing inaccurate duplicates such as "BodyBody". A series of ```gsub()``` calls are made:
 
-4.  Since the feature variables are not clean and hard to read, we also need to scrub them for duplicates and illegal symbols such as parantheses or dashes using ```gsub()```. Some guidelines for this scrubbing were followed as per this [Coursera discussion forum thread](https://class.coursera.org/getdata-011/forum/thread?thread_id=215), including expanding the frequency and time domain descriptors and removing inaccurate duplicates such as "BodyBody". A series of ```gsub()``` calls are made:
+    ```
+    # Clean up problematic symbols to make them safe to use in R
+    features$FEATURE <- gsub("\\(", "", features$FEATURE) # removes left paranthesis
+    ...
+    # Clean up duplicate feature descriptions
+    features$FEATURE <- gsub("MagMag", "Mag", features$FEATURE) # fixes MagMag
+    ...
+    # Give fuller, more readable feature descriptions
+    features$FEATURE <- gsub("BodyAcc", "BodyAcceleration", features$FEATURE)
+    ...
+    # Standarizes mean, meanFreq and std to Mean and Standard Deviation
+    features$FEATURE <- gsub("mean", "Mean", features$FEATURE)
+    ...
+    ```
 
-```
-# Clean up problematic symbols to make them safe to use in R
-features$FEATURE <- gsub("\\(", "", features$FEATURE) # removes left paranthesis
-...
-# Clean up duplicate feature descriptions
-features$FEATURE <- gsub("MagMag", "Mag", features$FEATURE) # fixes MagMag
-...
-# Give fuller, more readable feature descriptions
-features$FEATURE <- gsub("BodyAcc", "BodyAcceleration", features$FEATURE)
-...
-# Standarizes mean, meanFreq and std to Mean and Standard Deviation
-features$FEATURE <- gsub("mean", "Mean", features$FEATURE)
-...
-```
-
-
-5.  We can finally merge the test and train sets into one using ```rbind()``` to join the subsetted features (which is a 10299 x 86 frame) instead of first joining the sets then selecting for the required feature variables which would involve using a 10299 x 561 frame. We also relabel the column names after joining to end up with a 10299 x 88 frame (including the 2 columns for Subject and Activity) with the proper order of columns Subject, Activity, Var1, Var2... VarX.
+    5.  We can finally merge the test and train sets into one using ```rbind()``` to join the subsetted features (which is a 10299 x 86 frame) instead of first joining the sets then selecting for the required feature variables which would involve using a 10299 x 561 frame. We also relabel the column names after joining to end up with a 10299 x 88 frame (including the 2 columns for Subject and Activity) with the proper order of columns Subject, Activity, Var1, Var2... VarX.
 
 ```
 # Merge training (70%) and test sets (30%) into one data set
